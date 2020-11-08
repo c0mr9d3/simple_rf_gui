@@ -2,12 +2,13 @@
 from tkinter import font 
 from tkinter import ttk 
 from tkinter.messagebox import *
-import threading, serial_communication, sys
+import threading, serial_communication, sys, logging
 
 class GUI: 
 	# constructor method 
 	def __init__(self): 
 		
+		self.logs = logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p', filename='log.txt', level=logging.INFO)
 		# chat window which is currently hidden 
 		self.Window = Tk() 
 		self.Window.withdraw() 
@@ -114,6 +115,7 @@ class GUI:
 		while True: 
 			try:
 				message = self.com_port.readline().decode()
+				logging.info(message)
 				# insert message to text box
 				self.textCons.config(state = NORMAL) 
 				self.textCons.insert(END, message+'\n') 
@@ -123,7 +125,7 @@ class GUI:
 				print("Exit")
 				sys.exit()
 			except Exception as e: 
-				print("An error occured!", e)
+				print(sys.exc_info())
 			
 	# function to send messages 
 	def sendMessage(self): 
@@ -135,5 +137,7 @@ class GUI:
 			self.textCons.config(state = DISABLED) 
 			self.textCons.see(END)
 			#print(message)
+			logging.info(message)
 			self.com_port.write(message.encode())
 			break
+
