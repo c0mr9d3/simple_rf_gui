@@ -2,25 +2,26 @@
 from tkinter import font 
 from tkinter import ttk 
 from tkinter.messagebox import *
-import threading, serial_communication, sys, logging
+import threading, serial_communication, sys, logging, time
 
 class GUI: 
 	# constructor method 
 	def __init__(self): 
+		self.close_serial = False
 		
 		self.logs = logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p', filename='log.txt', level=logging.INFO)
 		# chat window which is currently hidden 
 		self.Window = Tk() 
 		self.Window.withdraw() 
 		
-		# login window 
+		# login window
 		self.login = Toplevel() 
-
+		
 		# set the title 
 		self.login.title("Login") 
 		self.login.resizable(width = False, height = False) 
 		self.login.configure(width = 400, height = 300) 
-
+		self.login.protocol("WM_DELETE_WINDOW", sys.exit)
 		# create a Label 
 		self.pls = Label(self.login, text = "Please login to continue", justify = CENTER, font = "Helvetica 14 bold") 
 		self.pls.place(relheight = 0.15, relx = 0.2, rely = 0.07) 
@@ -48,14 +49,15 @@ class GUI:
 		self.go = Button(self.login, text = "CONTINUE", font = "Helvetica 14 bold", command=lambda: self.goAhead(self.entryName.get()) if serial_communication.available_ports(self.entry_com_port.get()) == True 
 																																		else showerror('COM Port', 'COM port does not exist'))
 		self.go.place(relx = 0.4, rely = 0.55) 
-		#self.Window.bind('<Destroy>', self.Window.destroy)
+		#self.Window.bind('<Destroy>', self.just_exit)
+		self.Window.bind('<Return>', self.sendButton)
 		self.Window.mainloop() 
 
 	def goAhead(self, name): 
 		self.login.destroy() 
 		self.layout(name) 
-		rcv = threading.Thread(target=self.receive) 
-		rcv.start()
+		self.rcv = threading.Thread(target=self.receive) 
+		self.rcv.start()
 		
 	# The main layout of the chat 
 	def layout(self,name): 
@@ -87,7 +89,7 @@ class GUI:
 		self.entryMsg.focus() 
 		
 		# create a Send Button 
-		self.buttonMsg = Button(self.labelBottom, text = "Send", font = "Helvetica 10 bold", width = 20, bg = "#ABB2B9", command = lambda : self.sendButton(self.entryMsg.get())) 
+		self.buttonMsg = Button(self.labelBottom, text = "Send", font = "Helvetica 10 bold", width = 20, bg = "#ABB2B9", command = lambda: self.sendButton()) 
 		self.buttonMsg.place(relx = 0.77, rely = 0.008, relheight = 0.06, relwidth = 0.22) 
 		
 		self.textCons.config(cursor = "arrow") 
@@ -103,9 +105,9 @@ class GUI:
 		self.textCons.config(state = DISABLED) 
 
 	# function to basically start the thread for sending messages 
-	def sendButton(self, msg): 
+	def sendButton(self, event=False):
 		self.textCons.config(state = DISABLED) 
-		self.msg = msg 
+		self.msg = self.entryMsg.get()
 		self.entryMsg.delete(0, END)
 		snd = threading.Thread(target = self.sendMessage); snd.start()
 		
@@ -113,31 +115,35 @@ class GUI:
 	def receive(self): 
 		self.com_port = serial_communication.COMPORT
 		while True: 
-			try:
+			if self.close_serial == False:
 				message = self.com_port.readline().decode()
-				logging.info(message)
 				# insert message to text box
-				self.textCons.config(state = NORMAL) 
-				self.textCons.insert(END, message+'\n') 
-				self.textCons.config(state = DISABLED) 
-				self.textCons.see(END)
-			except RuntimeError:
-				print("Exit")
-				sys.exit()
-			except Exception as e: 
-				print(sys.exc_info())
-			
+				if message != '':
+					logging.info(message.strip())
+					self.textCons.config(state = NORMAL) 
+					self.textCons.insert(END, time.strftime('%d/%m/%Y %H:%M:%S')+' '+message+'\n') 
+					self.textCons.config(state = DISABLED) 
+					self.textCons.see(END)
+					message = ''
+			else:
+				print('close serial')
+				self.com_port.close()
+				break
+		
 	# function to send messages 
-	def sendMessage(self): 
+	def sendMessage(self, event=False): 
 		self.textCons.config(state=DISABLED) 
-		while True: 
+		while True:
 			message = (f"{self.name}: {self.msg}") 
 			self.textCons.config(state = NORMAL) 
-			self.textCons.insert(END, message+'\n') 
+			self.textCons.insert(END, time.strftime('%d/%m/%Y %H:%M:%S')+' '+message+'\n') 
 			self.textCons.config(state = DISABLED) 
 			self.textCons.see(END)
-			#print(message)
-			logging.info(message)
+			logging.info(message.strip())
 			self.com_port.write(message.encode())
+			self.msg = ''
 			break
-
+		
+	def just_exit(self, event):
+		self.close_serial = True
+		sys.exit()
