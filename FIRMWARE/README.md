@@ -1,6 +1,5 @@
 MicroModemGP
-https://github.com/markqvist/MicroModem
-Visit [my site](http://unsigned.io) for questions, comments and other details.
+https://github.com/markqvist/MicroModemGP
 
 
 - `vim config.h` to edit config file
