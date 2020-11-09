@@ -2,7 +2,7 @@
 from tkinter import font 
 from tkinter import ttk 
 from tkinter.messagebox import *
-import threading, serial_communication, sys, logging, time
+import threading, serial_communication, sys, logging, time, ctypes
 
 class GUI: 
 	# constructor method 
@@ -45,11 +45,11 @@ class GUI:
 		self.entry_com_port.place(relwidth=0.4, relheight=0.12, relx=0.35, rely=0.4)
 		
 		# create a Continue Button 
-		# along with action 
+		# along with action
 		self.go = Button(self.login, text = "CONTINUE", font = "Helvetica 14 bold", command=lambda: self.goAhead(self.entryName.get()) if serial_communication.available_ports(self.entry_com_port.get()) == True 
 																																		else showerror('COM Port', 'COM port does not exist'))
 		self.go.place(relx = 0.4, rely = 0.55) 
-		#self.Window.bind('<Destroy>', self.just_exit)
+		self.Window.bind('<Destroy>', self.just_exit)
 		self.Window.bind('<Return>', self.sendButton)
 		self.Window.mainloop() 
 
@@ -145,5 +145,6 @@ class GUI:
 			break
 		
 	def just_exit(self, event):
-		self.close_serial = True
+		res = ctypes.pythonapi.PyThreadState_SetAsyncExc(self.rcv.ident, ctypes.py_object(SystemExit))
+		print('exit')
 		sys.exit()
