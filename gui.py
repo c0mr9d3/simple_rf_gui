@@ -133,7 +133,7 @@ class GUI:
 	# function to send messages 
 	def sendMessage(self, event=False): 
 		self.textCons.config(state=DISABLED) 
-		while True:
+		if self.msg != '':
 			message = (f"{self.name}: {self.msg}") 
 			self.textCons.config(state = NORMAL) 
 			self.textCons.insert(END, time.strftime('%d/%m/%Y %H:%M:%S')+' '+message+'\n') 
@@ -142,7 +142,6 @@ class GUI:
 			logging.info(message.strip())
 			self.com_port.write(message.encode())
 			self.msg = ''
-			break
 		
 	def just_exit(self, event):
 		res = ctypes.pythonapi.PyThreadState_SetAsyncExc(self.rcv.ident, ctypes.py_object(SystemExit))
