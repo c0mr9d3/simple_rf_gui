@@ -49,8 +49,6 @@ class GUI:
 		self.go = Button(self.login, text = "CONTINUE", font = "Helvetica 14 bold", command=lambda: self.goAhead(self.entryName.get()) if serial_communication.available_ports(self.entry_com_port.get()) == True 
 																																		else showerror('COM Port', 'COM port does not exist'))
 		self.go.place(relx = 0.4, rely = 0.55) 
-		self.Window.bind('<Destroy>', self.just_exit)
-		self.Window.bind('<Return>', self.sendButton)
 		self.Window.mainloop() 
 
 	def goAhead(self, name): 
@@ -63,11 +61,13 @@ class GUI:
 	def layout(self,name): 
 		self.name = name 
 
-		# to show chat window 
+		# to show chat window
 		self.Window.deiconify() 
 		self.Window.title("CHATROOM") 
 		self.Window.resizable(width = False, height = False) 
-		self.Window.configure(width = 470, height = 550, bg = "#17202A") 
+		self.Window.configure(width = 470, height = 550, bg = "#17202A")
+		self.Window.bind('<Destroy>', self.just_exit)
+		self.Window.bind('<Return>', self.sendButton)
 
 		self.labelHead = Label(self.Window, bg = "#17202A", fg = "#EAECEE", text = self.name, font = "Helvetica 13 bold", pady = 5) 
 		self.labelHead.place(relwidth = 1) 
@@ -146,5 +146,4 @@ class GUI:
 		
 	def just_exit(self, event):
 		res = ctypes.pythonapi.PyThreadState_SetAsyncExc(self.rcv.ident, ctypes.py_object(SystemExit))
-		print('exit')
 		sys.exit()
