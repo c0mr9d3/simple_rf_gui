@@ -2,7 +2,7 @@
 from tkinter import font 
 from tkinter import ttk 
 from tkinter.messagebox import *
-import threading, serial_communication, sys, logging, time
+import threading, serial_communication, sys, logging, time, ctypes
 
 class GUI: 
 	# constructor method 
@@ -45,12 +45,10 @@ class GUI:
 		self.entry_com_port.place(relwidth=0.4, relheight=0.12, relx=0.35, rely=0.4)
 		
 		# create a Continue Button 
-		# along with action 
+		# along with action
 		self.go = Button(self.login, text = "CONTINUE", font = "Helvetica 14 bold", command=lambda: self.goAhead(self.entryName.get()) if serial_communication.available_ports(self.entry_com_port.get()) == True 
 																																		else showerror('COM Port', 'COM port does not exist'))
 		self.go.place(relx = 0.4, rely = 0.55) 
-		#self.Window.bind('<Destroy>', self.just_exit)
-		self.Window.bind('<Return>', self.sendButton)
 		self.Window.mainloop() 
 
 	def goAhead(self, name): 
@@ -63,11 +61,13 @@ class GUI:
 	def layout(self,name): 
 		self.name = name 
 
-		# to show chat window 
+		# to show chat window
 		self.Window.deiconify() 
 		self.Window.title("CHATROOM") 
 		self.Window.resizable(width = False, height = False) 
-		self.Window.configure(width = 470, height = 550, bg = "#17202A") 
+		self.Window.configure(width = 470, height = 550, bg = "#17202A")
+		self.Window.bind('<Destroy>', self.just_exit)
+		self.Window.bind('<Return>', self.sendButton)
 
 		self.labelHead = Label(self.Window, bg = "#17202A", fg = "#EAECEE", text = self.name, font = "Helvetica 13 bold", pady = 5) 
 		self.labelHead.place(relwidth = 1) 
@@ -133,7 +133,7 @@ class GUI:
 	# function to send messages 
 	def sendMessage(self, event=False): 
 		self.textCons.config(state=DISABLED) 
-		while True:
+		if self.msg != '':
 			message = (f"{self.name}: {self.msg}") 
 			self.textCons.config(state = NORMAL) 
 			self.textCons.insert(END, time.strftime('%d/%m/%Y %H:%M:%S')+' '+message+'\n') 
@@ -142,8 +142,7 @@ class GUI:
 			logging.info(message.strip())
 			self.com_port.write(message.encode())
 			self.msg = ''
-			break
 		
 	def just_exit(self, event):
-		self.close_serial = True
+		res = ctypes.pythonapi.PyThreadState_SetAsyncExc(self.rcv.ident, ctypes.py_object(SystemExit))
 		sys.exit()
