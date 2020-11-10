@@ -14,4 +14,4 @@ SOFTWARE
 `install.sh` - file which install needed components for program in Linux
 
 ## Schema
-![image](https://github.com/sw3nlab/simple_rf_gui/blob/main/chema.png)
+![image](https://github.com/sw3nlab/simple_rf_gui/blob/main/shema.png)
