@@ -3,9 +3,11 @@ Simple GUI for RF chat by serial port
 <br/>
 ![image](https://github.com/sw3nlab/simple_rf_gui/blob/main/chat.png)
 <br/>
-tested on
+##Tested on
 WINDOWS 7 x64 and Debian 10<br/><br/>
-HELLO World !
+##Requires
+- Chat GUI <-- Python 3.8.5 (Windows) / Python3 (GNU/Debian) + pyserial
+##Install
 `install.bat` - file which install needed components for program in Windows
 <br/>
 `install.sh` - file which install needed components for program in Linux
