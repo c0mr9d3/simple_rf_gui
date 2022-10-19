@@ -115,8 +115,12 @@ class GUI:
 	def receive(self): 
 		self.com_port = serial_communication.COMPORT
 		while True: 
-			if self.close_serial == False:
-				message = self.com_port.readline().decode()
+			if not self.close_serial:
+				try:
+					message = self.com_port.readline().decode()
+				except UnicodeDecodeError:
+					continue
+					
 				# insert message to text box
 				if message != '':
 					logging.info(message.strip())
